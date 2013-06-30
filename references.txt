@@ -1,0 +1,2 @@
+http://www.janeriksolem.net/2012/08/reading-gauges-detecting-lines-and.html
+http://stackoverflow.com/questions/9860667/writing-robust-color-and-size-invariant-circle-detection-with-opencv-based-on
