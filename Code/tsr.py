@@ -9,14 +9,14 @@ import os
 # inpic = "test/1277381949Image000019.jpg"
 # inpic = "test/1277391816Image000046.jpg"
 	
-vid = cv2.VideoCapture("street.mp4")
+vid = cv2.VideoCapture("../Videos/street.mp4")
 # vid = cv2.VideoCapture("street2.avi")
 # imgs = os.listdir("Test Sequence")
 
 nFrames = int(vid.get(cv.CV_CAP_PROP_FRAME_COUNT))
 fwidth = int(vid.get(cv.CV_CAP_PROP_FRAME_WIDTH))
 fheight = int(vid.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
-writer = cv2.VideoWriter("detection.avi", cv2.cv.CV_FOURCC('M', 'P', 'E', 'G'), 29, (fwidth, fheight), 1)
+writer = cv2.VideoWriter("../Results/detection.avi", cv2.cv.CV_FOURCC('M', 'P', 'E', 'G'), 29, (fwidth, fheight), 1)
 aspect_ratio= fwidth*1.0/fheight
 element = cv2.getStructuringElement(cv2.MORPH_CROSS,(3,3))
 print nFrames
