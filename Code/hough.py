@@ -8,7 +8,7 @@ def getCandidates(original, im):
 	draw_im = original
 
 	blur = cv2.GaussianBlur(gray_im, (0,0), 2)
-	result = cv2.HoughCircles(blur, cv2.cv.CV_HOUGH_GRADIENT, 2, 10, np.array([]), 30, 80, 1, 40)
+	result = cv2.HoughCircles(blur, cv2.cv.CV_HOUGH_GRADIENT, 2, 10, np.array([]), 40, 30, 1, 50)
 
 	if(result == None):
 		print "Returned nothing"
