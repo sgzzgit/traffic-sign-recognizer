@@ -1,4 +1,5 @@
-import cv2, numpy as np
+import cv2, numpy as np, os
+from ocr import *
 
 def drawRectangle(draw_im, candidate, col):
 	x, y, r = candidate
@@ -7,11 +8,11 @@ def drawRectangle(draw_im, candidate, col):
 
 def getBestCandidates(c1, c2, prev, draw_im):
 	bestCand = []
-	for candidate in c1:
-		drawRectangle(draw_im, candidate, (255, 0, 0))
+	# for candidate in c1:
+	# 	drawRectangle(draw_im, candidate, (255, 0, 0))
 
-	for candidate in c2:
-		drawRectangle(draw_im, candidate, (0, 255, 0))
+	# for candidate in c2:
+	# 	drawRectangle(draw_im, candidate, (0, 255, 0))
 
 	for candidate in c1:
 		if(len(getNeighbors(candidate, c2, 10)) != 0):
@@ -26,9 +27,27 @@ def getBestCandidates(c1, c2, prev, draw_im):
 				bestCand.append(candidate)
 
 	for candidate in bestCand:
-		drawRectangle(draw_im, candidate, (0, 0, 255))
-
+		x, y, r = candidate
+		x = int(x-25)
+		y = int(y-25)
+		# candidate_pic = draw_im[y:y+50, x:x+50]
+		# recognize(candidate_pic)
+		cv2.rectangle(draw_im, (x,y), (x+50,y+50), (0, 0, 255))
 	return bestCand, draw_im
+
+def recognize(candidate_pic):
+	i = os.listdir("candidates/")
+	# cv2.imwrite("candidates/candidate"+str(len(i))+".jpg", candidate_pic)
+	gray_im = cv2.cvtColor(candidate_pic, cv2.COLOR_BGR2GRAY)
+	cv2.imwrite("candidates/candidate"+str(len(i))+"_gray.jpg", gray_im)
+	gray_im = cv2.equalizeHist(gray_im)
+	r, thresh = cv2.threshold(gray_im, 200, 255, cv2.THRESH_BINARY)
+	# cv2.imwrite("candidates/candidate"+str(len(i))+"_thresh.jpg", thresh)
+	eroded = cv2.erode(thresh, cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)))
+	# r, eroded = cv2.threshold(eroded, 128, 255, cv2.THRESH_BINARY_INV)
+	cv2.imwrite("candidates/candidate"+str(len(i))+"_eroded.jpg", eroded)
+	readImage(eroded, "candidates/candidate"+str(len(i)))
+	print "Text: ", image_file_to_string("candidates/candidate"+str(len(i))+"_eroded.jpg")
 
 def getNeighbors(c, circles, d):
 	neighbors = []
