@@ -3,16 +3,18 @@ from colorsegm import *
 from hough import *
 from dstCorrelation import *
 import os
+import numpy as np
+
+clearCandidates()
 
 # vid = cv2.VideoCapture("../Videos/street.mp4")
-vid = cv2.VideoCapture("../Videos/street5.avi")
+vid = cv2.VideoCapture("../Videos/street2.avi")
 
 nFrames = int(vid.get(cv.CV_CAP_PROP_FRAME_COUNT))
 fwidth = int(vid.get(cv.CV_CAP_PROP_FRAME_WIDTH))
 fheight = int(vid.get(cv.CV_CAP_PROP_FRAME_HEIGHT))
-writer = cv2.VideoWriter("../Results/detection_street5.avi", cv2.cv.CV_FOURCC('M', 'P', 'E', 'G'), 29, (fwidth, fheight), 1)
+writer = cv2.VideoWriter("../Results/detection.avi", cv2.cv.CV_FOURCC('M', 'P', 'E', 'G'), 29, (fwidth, fheight), 1)
 # writer = cv2.VideoWriter("../Results/test_result.avi", cv2.cv.CV_FOURCC('M', 'P', 'E', 'G'), 29, (fwidth, fheight), 1)
-aspect_ratio= fwidth*1.0/fheight
 
 element1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13))
 element2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(11,11))
@@ -20,6 +22,10 @@ match_candidates= []
 
 # for i in range(24):
 # 	cv_im = vid.read()[1]
+
+dbpics = os.listdir("Database")
+recognitions = np.zeros(len(dbpics))
+count = 0
 
 for i in range(nFrames):
 	cv_im = vid.read()[1]
@@ -39,8 +45,26 @@ for i in range(nFrames):
 
 	# Detect circles in the frame
 	candidates = getCandidates(h)
-	match_candidates, draw_im = getBestCandidates(candidates, edgeCandidates, match_candidates, cv_im)
+	match_candidates, draw_im, pics = getBestCandidates(candidates, edgeCandidates, match_candidates, cv_im)
+
+	if(len(match_candidates) == 0):
+		count = count + 1
+		if(count == 10):
+			if(np.amax(recognitions) != 0):
+				print "Best match is", dbpics[np.argmax(recognitions)]
+			recognitions = np.zeros(len(dbpics))
+	else:
+		count = 0
+		for cand in pics:
+			rec_candidates = recognize(cand)
+			if(rec_candidates != None):
+				recognitions[rec_candidates[0]] = recognitions[rec_candidates[0]] + 10
+				recognitions[rec_candidates[1]] = recognitions[rec_candidates[1]] + 1
+
 
 	# cv2.imwrite("../Temp/frame_"+str(i)+".jpg", draw_im)
 	writer.write(draw_im)
-	print "Processed frame", i
+	print "Processed frame", i, recognitions
+
+if(np.amax(recognitions) != 0):
+	print "Best match is", dbpics[np.argmax(recognitions)]

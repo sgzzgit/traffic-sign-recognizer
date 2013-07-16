@@ -1,5 +1,5 @@
 import cv2, numpy as np, os
-from ocr import *
+from recognition import *
 
 def drawRectangle(draw_im, candidate, col):
 	x, y, r = candidate
@@ -26,30 +26,60 @@ def getBestCandidates(c1, c2, prev, draw_im):
 			if(len(getNeighbors(candidate, prev, 30)) != 0):
 				bestCand.append(candidate)
 
+	pics = []
 	for candidate in bestCand:
 		x, y, r = candidate
 		x = int(x-25)
 		y = int(y-25)
-		# candidate_pic = draw_im[y:y+50, x:x+50]
-		# recognize(candidate_pic)
+		candidate_pic = draw_im[y:y+50, x:x+50]
+		pics.append(candidate_pic)
 		cv2.rectangle(draw_im, (x,y), (x+50,y+50), (0, 0, 255))
-	return bestCand, draw_im
+	return bestCand, draw_im, pics
+
+def clearCandidates():
+	i = os.listdir("candidates/")
+	for im in i:
+		os.remove("candidates/"+im)
 
 def recognize(candidate_pic):
+
 	i = os.listdir("candidates/")
-	# cv2.imwrite("candidates/candidate"+str(len(i))+".jpg", candidate_pic)
-	gray_im = cv2.cvtColor(candidate_pic, cv2.COLOR_BGR2GRAY)
-	cv2.imwrite("candidates/candidate"+str(len(i))+"_gray.jpg", gray_im)
-	gray_im = cv2.equalizeHist(gray_im)
-	r, thresh = cv2.threshold(gray_im, 200, 255, cv2.THRESH_BINARY)
+	cv2.imwrite("candidates/candidate"+str(len(i))+".jpg", candidate_pic)
+	try:
+		return getBestMatchDst("candidates/candidate"+str(len(i))+".jpg")
+	except:
+		return None
+	
+	# candidate_pic = cv2.resize(candidate_pic, (512, 512))
+	# getBestMatchFor("candidates/candidate"+str(len(i))+".jpg")
+	# gray_im = cv2.cvtColor(candidate_pic, cv2.COLOR_BGR2GRAY)
+	# gray_im = cv2.equalizeHist(gray_im)
+	# matchImage("candidates/candidate"+str(len(i))+".jpg")
+	#cv2.imwrite("candidates/candidate"+str(len(i))+"_gray.jpg", gray_im)
+	# r, thresh = cv2.threshold(gray_im, 200, 255, cv2.THRESH_BINARY)
 	# cv2.imwrite("candidates/candidate"+str(len(i))+"_thresh.jpg", thresh)
-	eroded = cv2.erode(thresh, cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)))
-	# r, eroded = cv2.threshold(eroded, 128, 255, cv2.THRESH_BINARY_INV)
-	cv2.imwrite("candidates/candidate"+str(len(i))+"_eroded.jpg", eroded)
-	readImage(eroded, "candidates/candidate"+str(len(i)))
-	print "Text: ", image_file_to_string("candidates/candidate"+str(len(i))+"_eroded.jpg")
+	# eroded = cv2.erode(thresh, cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(2,2)))
+	# dilated = cv2.dilate(eroded, cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(3,3)))
+	#r, eroded = cv2.threshold(eroded, 128, 255, cv2.THRESH_BINARY_INV)
+	#cv2.imwrite("candidates/candidate"+str(len(i))+"_dilated.jpg", dilated)
+	# readImage(dilated, "candidates/candidate"+str(len(i)))
+	# edge = extractCircle(candidate_pic)
+	# cv2.imwrite("candidates/candidate_edge"+str(len(i))+".jpg", edge)
+	#print "Text: ", image_file_to_string("candidates/candidate"+str(len(i))+"_dilated.jpg")
+
+def extractCircle(candidate_pic):
+	edge = cv2.Canny(candidate_pic, 220, 240)
+	result = cv2.HoughCircles(edge, cv2.cv.CV_HOUGH_GRADIENT, 2, 10, np.array([]), 40, 50, 1, 50)
+	if(result == None):
+		circles = []
+	else:
+		circles = result[0]
+	for c in circles:
+		cv2.rectangle(edge, (c[0]-c[2], c[1]-c[2]), (c[0]+c[2], c[1]+c[2]), (128, 128, 128))
+	return edge
 
 def getNeighbors(c, circles, d):
+
 	neighbors = []
 	for circle in circles:
 		if((c[0] >= circle[0]-d and c[0] <= circle[0]+d) or (c[1] >= circle[1]-d and c[1] <= circle[1]+d)):
