@@ -33,7 +33,7 @@ clearCandidates()
 # Street16
 
 # vid = cv2.VideoCapture("../Videos/street.mp4")
-vid = cv2.VideoCapture("../Videos/street.avi")
+vid = cv2.VideoCapture("../Videos/street13.avi")
 
 nFrames = int(vid.get(cv.CV_CAP_PROP_FRAME_COUNT))
 fwidth = int(vid.get(cv.CV_CAP_PROP_FRAME_WIDTH))
