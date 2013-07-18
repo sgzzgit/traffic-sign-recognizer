@@ -7,8 +7,33 @@ import numpy as np
 
 clearCandidates()
 
+# Working:
+# Street2 (2/2)
+# Street6 (1/1)
+# Street8 (1/2)
+# Street11 (1/1)
+# Street13 (1/1)
+# Street14 (1/1)
+# Street15 (1/1)
+# Street17 (1/1)
+# Street18 (1/1)
+
+# Not working:
+# Street (1/1) --> different colors
+# Street8 (1/2)
+# Street10 (2/2)
+
+# Bad Videos (do not contain available signs or bad detection):
+# Street3
+# Street4 
+# Street5
+# Street7
+# Street9
+# Street12
+# Street16
+
 # vid = cv2.VideoCapture("../Videos/street.mp4")
-vid = cv2.VideoCapture("../Videos/street2.avi")
+vid = cv2.VideoCapture("../Videos/street.avi")
 
 nFrames = int(vid.get(cv.CV_CAP_PROP_FRAME_COUNT))
 fwidth = int(vid.get(cv.CV_CAP_PROP_FRAME_WIDTH))
@@ -19,6 +44,9 @@ writer = cv2.VideoWriter("../Results/detection.avi", cv2.cv.CV_FOURCC('M', 'P', 
 element1 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(13,13))
 element2 = cv2.getStructuringElement(cv2.MORPH_ELLIPSE,(11,11))
 match_candidates= []
+last_first = None
+successive = 0
+coeff = 0
 
 # for i in range(24):
 # 	cv_im = vid.read()[1]
@@ -51,6 +79,7 @@ for i in range(nFrames):
 		count = count + 1
 		if(count == 10):
 			if(np.amax(recognitions) != 0):
+				print recognitions
 				print "Best match is", dbpics[np.argmax(recognitions)]
 			recognitions = np.zeros(len(dbpics))
 	else:
@@ -58,13 +87,25 @@ for i in range(nFrames):
 		for cand in pics:
 			rec_candidates = recognize(cand)
 			if(rec_candidates != None):
-				recognitions[rec_candidates[0]] = recognitions[rec_candidates[0]] + 10
-				recognitions[rec_candidates[1]] = recognitions[rec_candidates[1]] + 1
-
+				if(rec_candidates[0] == last_first):
+					successive = successive + 1
+					coeff = coeff+10
+				else:
+					successive = 0
+					coeff = 10
+				if(successive > 10):
+					if(successive == 10):
+						print recognitions
+						print "Best match is", dbpics[np.argmax(recognitions)]
+				else:
+					recognitions[rec_candidates[0]] = recognitions[rec_candidates[0]] + coeff
+					recognitions[rec_candidates[1]] = recognitions[rec_candidates[1]] + 1
+					last_first = rec_candidates[0]
 
 	# cv2.imwrite("../Temp/frame_"+str(i)+".jpg", draw_im)
 	writer.write(draw_im)
-	print "Processed frame", i, recognitions
+	# print "Processed frame", i, recognitions
 
 if(np.amax(recognitions) != 0):
+	print recognitions
 	print "Best match is", dbpics[np.argmax(recognitions)]

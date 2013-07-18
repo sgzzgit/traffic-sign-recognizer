@@ -44,8 +44,8 @@ def templateMatch(im1, im2):
 	results = []
 	for i in range(25, 50, 5):
 		template = cv2.resize(img2, (i, i))
-		cv2.imwrite("image.jpg", img1)
-		cv2.imwrite("template_"+str(i)+".jpg", template)
+		# cv2.imwrite("image.jpg", img1)
+		# cv2.imwrite("template_"+str(i)+".jpg", template)
 		match = cv2.matchTemplate(img1, template, cv2.cv.CV_TM_SQDIFF_NORMED) 
 		results.append(np.amin(match))
 	return np.amin(results)
